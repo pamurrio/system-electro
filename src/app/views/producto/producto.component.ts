@@ -26,8 +26,11 @@ import { CardComponent,CardBodyComponent, CardHeaderComponent, TableDirective, C
     ModalTitleDirective, NgIf, ButtonDirective, ButtonCloseDirective, FormsModule ],
 })
 export class ProductoComponent {
+  filtro: string = '';
   productoSeleccionado: any = null;
   modoFormulario: boolean = false;
+  paginaActual: number = 1;
+  elementosPorPagina: number = 1;
   productos = [
     {
       id: 1,
@@ -75,6 +78,38 @@ export class ProductoComponent {
     this.productos.push({ ...this.productoSeleccionado });
     this.productoSeleccionado = null;
     this.modoFormulario = false;
+  }
+
+  productosFiltrados(): any[] {
+    const inicio = (this.paginaActual - 1) * this.elementosPorPagina;
+    const fin = inicio + this.elementosPorPagina;
+    return this.productosFiltradosSinPaginacion().slice(inicio, fin);
+  }
+
+  get totalPaginas(): number {
+    return Math.ceil(this.productosFiltradosSinPaginacion().length / this.elementosPorPagina);
+  }
+
+  productosFiltradosSinPaginacion(): any[] {
+    if (!this.filtro) return this.productos;
+    const termino = this.filtro.toLowerCase();
+    return this.productos.filter(p =>
+      p.tipo.toLowerCase().includes(termino)
+    );
+  }
+
+  cambiarPagina(nuevaPagina: number): void {
+    if (nuevaPagina >= 1 && nuevaPagina <= this.totalPaginas) {
+      this.paginaActual = nuevaPagina;
+    }
+  }
+
+  onFiltroChange() {
+    this.paginaActual = 1; // Reiniciar a la primera página
+  }
+
+  onCambiarElementosPorPagina(): void {
+    this.paginaActual = 1; // Siempre reinicia a la primera página al cambiar cantidad
   }
   
 }

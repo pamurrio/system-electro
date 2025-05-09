@@ -5,46 +5,111 @@
     </c-card-header>
     <c-card-body>
       <button
-      cButton
-      color="success"
-      class="mb-3"
-      [cModalToggle]="'verticallyCenteredModal'"
-      (click)="nuevoProducto()"
-    >
-      Nuevo producto
-    </button>
+        cButton
+        color="success"
+        class="mb-3"
+        [cModalToggle]="'verticallyCenteredModal'"
+        (click)="nuevoProducto()"
+      >
+        Nuevo producto
+      </button>
 
-      <table cTable>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Codigo</th>
-            <th>Tipo Producto (Marca)</th>
-            <th>Cantidad</th>
-            <th>Precio</th>
-            <th>Cantidad</th>
-            <th>Foto</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let p of productos">
-            <td>{{ p.id }}</td>
-            <td>{{ p.codigo }}</td>
-            <td>{{ p.tipo }}</td>
-            <td>{{ p.cantidad }}</td>
-            <td>$ {{ p.precio }}</td>
-            <td>{{ p.cantidad }}</td>
-            <td><img [src]="p.foto" width="60" alt="foto producto" /></td>
-            <td>
-              <button 
+     <div class="mb-3 d-flex align-items-center justify-content-between flex-wrap">
+      <div class="flex-grow-1 me-3">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Buscar por tipo de producto..."
+          [(ngModel)]="filtro"
+          (ngModelChange)="onFiltroChange()"
+        />
+      </div>
+
+      <div class="w-auto">
+        <select class="form-select" [(ngModel)]="elementosPorPagina" (ngModelChange)="onCambiarElementosPorPagina()">
+          <option [ngValue]="1">1</option>
+          <option [ngValue]="2">2</option>
+          <option [ngValue]="20">20</option>
+          <option [ngValue]="50">50</option>
+        </select>
+      </div>
+    </div>
+
+      <div class="table-responsive d-none d-md-block">
+        <table cTable>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Codigo</th>
+              <th>Tipo Producto (Marca)</th>
+              <th>Cantidad</th>
+              <th>Precio</th>
+              <th>Cantidad</th>
+              <th>Foto</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of productosFiltrados()">
+              <td>{{ p.id }}</td>
+              <td>{{ p.codigo }}</td>
+              <td>{{ p.tipo }}</td>
+              <td>{{ p.cantidad }}</td>
+              <td>$ {{ p.precio }}</td>
+              <td>{{ p.cantidad }}</td>
+              <td>
+                <img [src]="p.foto" width="60" alt="foto producto" />
+              </td>
+              <td>
+                <button 
+                  [cModalToggle]="'verticallyCenteredModal'"
+                  cButton color="primary" (click)="verDetalle(p)">
+                  Ver más
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-md-none">
+        <c-card *ngFor="let p of productosFiltrados()" class="mb-3">
+          <c-card-body>
+            <div class="d-flex align-items-center mb-2">
+              <img [src]="p.foto" width="80" class="me-3" alt="foto" />
+              <div>
+                <div><strong>Código:</strong> {{ p.codigo }}</div>
+                <div><strong>Tipo:</strong> {{ p.tipo }}</div>
+                <div><strong>Cantidad:</strong> {{ p.cantidad }}</div>
+                <div><strong>Precio:</strong> ${{ p.precio }}</div>
+              </div>
+            </div>
+            <button 
               [cModalToggle]="'verticallyCenteredModal'"
               cButton color="primary" (click)="verDetalle(p)">
-                Ver más
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              Ver más
+            </button>
+          </c-card-body>
+        </c-card>
+      </div>  
+      <nav class="mt-3">
+        <ul class="pagination justify-content-center">
+          <li class="page-item" [class.disabled]="paginaActual === 1" *ngIf="paginaActual > 1">
+            <a class="page-link" (click)="cambiarPagina(paginaActual - 1)">Anterior</a>
+          </li>
+
+          <li 
+            class="page-item"
+            *ngFor="let pagina of [].constructor(totalPaginas); let i = index"
+            [class.active]="paginaActual === i + 1">
+            <a class="page-link" (click)="cambiarPagina(i + 1)">{{ i + 1 }}</a>
+          </li>
+
+          <li class="page-item" [class.disabled]="paginaActual === totalPaginas" *ngIf="paginaActual < totalPaginas">
+            <a class="page-link" (click)="cambiarPagina(paginaActual + 1)">Siguiente</a>
+          </li>
+        </ul>
+      </nav>
     </c-card-body>
   </c-card>
 </c-col>

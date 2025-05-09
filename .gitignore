@@ -4,6 +4,7 @@ node_modules/
 # Angular build output
 dist/
 out-tsc/
+.angular/
 
 # Compiled files
 *.log
