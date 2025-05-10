@@ -63,8 +63,14 @@
               <td>
                 <button 
                   [cModalToggle]="'verticallyCenteredModal'"
-                  cButton color="primary" (click)="verDetalle(p)">
+                  cButton color="info" (click)="verDetalle(p)" class="me-1">
                   Ver más
+                </button>
+                <button 
+                  [cModalToggle]="'verticallyCenteredModal'"
+                  cButton color="primary"
+                  (click)="editarProducto(p)">
+                  Editar
                 </button>
               </td>
             </tr>
@@ -86,8 +92,14 @@
             </div>
             <button 
               [cModalToggle]="'verticallyCenteredModal'"
-              cButton color="primary" (click)="verDetalle(p)">
+              cButton color="info" (click)="verDetalle(p)" class="me-2">
               Ver más
+            </button>
+            <button 
+              [cModalToggle]="'verticallyCenteredModal'"
+              cButton color="primary"
+              (click)="editarProducto(p)">
+              Editar
             </button>
           </c-card-body>
         </c-card>
@@ -170,7 +182,7 @@
 
     <button
       [cModalToggle]="'verticallyCenteredModal'"
-      cButton
+      cButton (click)="cerrarModal()"
       color="secondary"
     >
       Cerrar
