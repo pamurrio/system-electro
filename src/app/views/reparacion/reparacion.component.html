@@ -1,1 +1,198 @@
-<p>Reparacion</p>
+<c-card class="mb-4">
+  <c-card-header><strong>Datos del Cliente</strong></c-card-header>
+  <c-card-body>
+
+    <div class="row mb-3">
+      <div class="col-md-4">
+        <label for="dni" class="form-label">DNI</label>
+        <input
+          type="text"
+          id="dni"
+          class="form-control"
+          [(ngModel)]="dniBusqueda"
+        />
+      </div>
+      <div class="col-md-4 align-self-end">
+        <button cButton color="primary" (click)="buscarCliente()">Buscar cliente</button>
+      </div>
+    </div>
+
+    <div *ngIf="clienteSeleccionado" class="border p-3 bg-light">
+      <p><strong>Nombre:</strong> {{ clienteSeleccionado.nombre }}</p>
+      <p><strong>Email:</strong> {{ clienteSeleccionado.email }}</p>
+      <p><strong>Teléfono:</strong> {{ clienteSeleccionado.telefono }}</p>
+      <p><strong>Dirección:</strong> {{ clienteSeleccionado.direccion }}</p>
+    </div>
+
+    <div *ngIf="!clienteSeleccionado && clienteNoEncontrado">
+      <p class="text-danger">Cliente no encontrado.</p>
+      <button cButton color="success" [cModalToggle]="'modalNuevoCliente'">Nuevo cliente</button>
+    </div>
+
+  </c-card-body>
+</c-card>
+
+<c-modal [id]="'modalNuevoCliente'" alignment="center">
+  <c-modal-header>
+    <h5>Nuevo Cliente</h5>
+  </c-modal-header>
+  <c-modal-body>
+    <form #formCliente="ngForm">
+      <div class="mb-3">
+        <label>DNI</label>
+        <input type="text" class="form-control" [(ngModel)]="nuevoCliente.dni" name="dni" />
+      </div>
+      <div class="mb-3">
+        <label>Nombre</label>
+        <input type="text" class="form-control" [(ngModel)]="nuevoCliente.nombre" name="nombre" />
+      </div>
+      <div class="mb-3">
+        <label>Email</label>
+        <input type="email" class="form-control" [(ngModel)]="nuevoCliente.email" name="email" />
+      </div>
+      <div class="mb-3">
+        <label>Teléfono</label>
+        <input type="text" class="form-control" [(ngModel)]="nuevoCliente.telefono" name="telefono" />
+      </div>
+      <div class="mb-3">
+        <label>Dirección</label>
+        <input type="text" class="form-control" [(ngModel)]="nuevoCliente.direccion" name="direccion" />
+      </div>
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="success" [cModalToggle]="'modalNuevoCliente'" (click)="guardarNuevoCliente()">Guardar</button>
+    <button cButton color="secondary" [cModalToggle]="'modalNuevoCliente'">Cancelar</button>
+  </c-modal-footer>
+</c-modal>
+
+<c-card class="mb-4">
+  <c-card-header><strong>Datos del equipo</strong></c-card-header>
+  <c-card-body>
+
+    <!-- Escritorio -->
+    <div class="d-none d-md-block">
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Marca</label>
+          <input type="text" class="form-control" [(ngModel)]="equipo.marca" name="marca" />
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Modelo</label>
+          <input type="text" class="form-control" [(ngModel)]="equipo.modelo" name="modelo" />
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Serie</label>
+          <input type="text" class="form-control" [(ngModel)]="equipo.serie" name="serie" />
+        </div>
+        <div class="col-12 mb-3">
+          <label class="form-label">Descripción de la falla</label>
+          <textarea class="form-control" rows="3" [(ngModel)]="equipo.descripcion" name="descripcion"></textarea>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Presupuesto</label>
+          <input type="number" class="form-control" [(ngModel)]="presupuesto" name="presupuesto" />
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Garantía (días)</label>
+          <input type="number" class="form-control" [(ngModel)]="garantiaDias" name="garantiaDias" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile -->
+    <div class="d-md-none">
+      <c-card class="mb-3">
+        <c-card-body>
+          <div class="mb-3">
+            <label class="form-label">Marca</label>
+            <input type="text" class="form-control" [(ngModel)]="equipo.marca" name="marca" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Modelo</label>
+            <input type="text" class="form-control" [(ngModel)]="equipo.modelo" name="modelo" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Serie</label>
+            <input type="text" class="form-control" [(ngModel)]="equipo.serie" name="serie" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Descripción de la falla</label>
+            <textarea class="form-control" rows="3" [(ngModel)]="equipo.descripcion" name="descripcion"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Presupuesto</label>
+            <input type="number" class="form-control" [(ngModel)]="presupuesto" name="presupuesto" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Garantía (días)</label>
+            <input type="number" class="form-control" [(ngModel)]="garantiaDias" name="garantiaDias" />
+          </div>
+        </c-card-body>
+      </c-card>
+    </div>
+
+  </c-card-body>
+</c-card>
+
+<div class="text-end mb-4">
+  <button cButton color="primary" (click)="guardarReparacion()">
+    Guardar reparación
+  </button>
+</div>
+
+
+<c-card class="mb-4">
+  <c-card-header><strong>Reparaciones por estado</strong></c-card-header>
+  <c-card-body>
+
+    <ng-container *ngFor="let estado of ['Pendiente', 'Entregado', 'NJR']">
+      <h5 class="mt-4">{{ estado }}</h5>
+      <div *ngIf="getReparacionesPorEstado(estado).length > 0; else sinDatos">
+        <div class="table-responsive d-none d-md-block">
+          <table cTable>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Cliente</th>
+                <th>Equipo</th>
+                <th>Presupuesto</th>
+                <th>Garantía</th>
+                <th>Fecha ingreso</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of getReparacionesPorEstado(estado)">
+                <td>{{ r.id }}</td>
+                <td>{{ r.cliente.nombre }}</td>
+                <td>{{ r.equipo.marca }} {{ r.equipo.modelo }}</td>
+                <td>$ {{ r.presupuesto }}</td>
+                <td>{{ r.garantiaDias }} días</td>
+                <td>{{ r.fechaIngreso | date:'shortDate' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Vista mobile -->
+        <div class="d-md-none">
+          <c-card *ngFor="let r of getReparacionesPorEstado(estado)" class="mb-3">
+            <c-card-body>
+              <p><strong>#{{ r.id }}</strong></p>
+              <p><strong>Cliente:</strong> {{ r.cliente.nombre }}</p>
+              <p><strong>Equipo:</strong> {{ r.equipo.marca }} {{ r.equipo.modelo }}</p>
+              <p><strong>Presupuesto:</strong> $ {{ r.presupuesto }}</p>
+              <p><strong>Garantía:</strong> {{ r.garantiaDias }} días</p>
+              <p><strong>Fecha ingreso:</strong> {{ r.fechaIngreso | date:'shortDate' }}</p>
+            </c-card-body>
+          </c-card>
+        </div>
+      </div>
+
+      <ng-template #sinDatos>
+        <p class="text-muted">No hay reparaciones en este estado.</p>
+      </ng-template>
+    </ng-container>
+
+  </c-card-body>
+</c-card>
