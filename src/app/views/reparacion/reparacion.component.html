@@ -97,6 +97,10 @@
           <label class="form-label">Garantía (días)</label>
           <input type="number" class="form-control" [(ngModel)]="garantiaDias" name="garantiaDias" />
         </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Fecha estimada de entrega</label>
+            <input type="date" class="form-control" [(ngModel)]="fechaEstimadaEntrega" name="fechaEstimadaEntrega" />
+        </div>
       </div>
     </div>
 
@@ -128,6 +132,10 @@
             <label class="form-label">Garantía (días)</label>
             <input type="number" class="form-control" [(ngModel)]="garantiaDias" name="garantiaDias" />
           </div>
+          <div class="mb-3">
+            <label class="form-label">Fecha estimada de entrega</label>
+            <input type="date" class="form-control" [(ngModel)]="fechaEstimadaEntrega" name="fechaEstimadaEntrega" />
+         </div>
         </c-card-body>
       </c-card>
     </div>
@@ -159,6 +167,9 @@
                 <th>Presupuesto</th>
                 <th>Garantía</th>
                 <th>Fecha ingreso</th>
+                <th>Fecha Estimado Entrega</th>
+                <th>Estado</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -168,7 +179,24 @@
                 <td>{{ r.equipo.marca }} {{ r.equipo.modelo }}</td>
                 <td>$ {{ r.presupuesto }}</td>
                 <td>{{ r.garantiaDias }} días</td>
-                <td>{{ r.fechaIngreso | date:'shortDate' }}</td>
+                <td>{{ r.fechaIngreso | date:'dd/MM/yyyy' }}</td>
+                <td>{{ r.fechaEstimadaEntrega | date:'dd/MM/yyyy' }}</td>
+                <td>
+                <ng-container [ngSwitch]="getEstadoReparacion(r)">
+                    <span *ngSwitchCase="'vencido'" class="badge bg-danger">Vencido</span>
+                    <span *ngSwitchCase="'por-vencer'" class="badge bg-warning text-dark">Por vencer</span>
+                    <span *ngSwitchCase="'vigente'" class="badge bg-success">Vigente</span>
+                    <span *ngSwitchDefault class="text-muted">-</span>
+                </ng-container>
+                </td>
+                <td>
+                    <button
+                        cButton size="sm" color="info"
+                        [cModalToggle]="'modalEditarReparacion'"
+                        (click)="seleccionarReparacion(r)">
+                        {{ r.estado === 'Pendiente' ? 'Editar' : 'Ver detalle' }}
+                    </button>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -183,7 +211,25 @@
               <p><strong>Equipo:</strong> {{ r.equipo.marca }} {{ r.equipo.modelo }}</p>
               <p><strong>Presupuesto:</strong> $ {{ r.presupuesto }}</p>
               <p><strong>Garantía:</strong> {{ r.garantiaDias }} días</p>
-              <p><strong>Fecha ingreso:</strong> {{ r.fechaIngreso | date:'shortDate' }}</p>
+              <p><strong>Fecha ingreso:</strong> {{ r.fechaIngreso | date:'dd/MM/yyyy' }}</p>
+              <p><strong>Fecha Estimado Entrega:</strong> {{ r.fechaEstimadaEntrega | date:'dd/MM/yyyy' }}</p>
+              <p>
+                <strong>Estado reparación:</strong>
+                <ng-container [ngSwitch]="getEstadoReparacion(r)">
+                    <span *ngSwitchCase="'vencido'" class="badge bg-danger">Vencido</span>
+                    <span *ngSwitchCase="'por-vencer'" class="badge bg-warning text-dark">Por vencer</span>
+                    <span *ngSwitchCase="'vigente'" class="badge bg-success">Vigente</span>
+                    <span *ngSwitchDefault class="text-muted">-</span>
+                </ng-container>
+               </p>
+               <p>
+                    <button
+                        cButton size="sm" color="info"
+                        [cModalToggle]="'modalEditarReparacion'"
+                        (click)="seleccionarReparacion(r)">
+                        {{ r.estado === 'Pendiente' ? 'Editar' : 'Ver detalle' }}
+                    </button>
+               </p>
             </c-card-body>
           </c-card>
         </div>
@@ -196,3 +242,62 @@
 
   </c-card-body>
 </c-card>
+
+<c-modal [id]="'modalEditarReparacion'" alignment="center" size="lg">
+  <c-modal-header>
+    <h5>Editar reparación</h5>
+  </c-modal-header>
+  <c-modal-body *ngIf="reparacionSeleccionada">
+
+    <p><strong>ID:</strong> {{ reparacionSeleccionada.id }}</p>
+    <p><strong>Cliente:</strong> {{ reparacionSeleccionada.cliente.nombre }}</p>
+    <p><strong>Equipo:</strong> {{ reparacionSeleccionada.equipo.marca }} {{ reparacionSeleccionada.equipo.modelo }}</p>
+    <p><strong>Fecha ingreso:</strong> {{ reparacionSeleccionada.fechaIngreso | date:'dd/MM/yyyy' }}</p>
+
+    <div class="mb-3">
+      <label>Presupuesto</label>
+      <input type="number" class="form-control" [(ngModel)]="reparacionSeleccionada.presupuesto" 
+      [disabled]="reparacionSeleccionada.estado !== 'Pendiente'"/>
+    </div>
+
+    <div class="mb-3">
+      <label>Estado</label>
+      <select class="form-control" [(ngModel)]="nuevoEstado"
+      [disabled]="reparacionSeleccionada.estado !== 'Pendiente'">
+        <option value="Pendiente">Pendiente</option>
+        <option value="Entregado">Entregado</option>
+        <option value="NJR">NJR</option>
+      </select>
+    </div>
+
+    <div class="mb-3" *ngIf="reparacionSeleccionada?.estado === 'Pendiente'">
+      <label>Agregar observación</label>
+      <textarea class="form-control" rows="3" [(ngModel)]="nuevaObservacion"></textarea>
+    </div>
+    <div *ngIf="reparacionSeleccionada?.historial?.length">
+        <label><strong>Historial de observaciones:</strong></label>
+        <ul class="list-group mt-2">
+            <li *ngFor="let h of reparacionSeleccionada.historial" class="list-group-item d-flex justify-content-between align-items-start">
+            <div class="ms-2 me-auto">
+                {{ h.mensaje }}
+            </div>
+            <small class="text-muted">{{ h.fecha | date:'dd/MM/yyyy HH:mm' }}</small>
+            </li>
+        </ul>
+    </div>
+    <div *ngIf="reparacionSeleccionada?.estado !== 'Pendiente'" class="mt-4">
+        <hr>
+        <p class="text-muted"><strong>Estado actual:</strong> {{ reparacionSeleccionada.estado }}</p>
+        <p *ngIf="reparacionSeleccionada.estado === 'Entregado' && reparacionSeleccionada.fechaEstimadaEntrega">
+            <strong>Fecha estimada de entrega:</strong> {{ reparacionSeleccionada.fechaEstimadaEntrega | date:'dd/MM/yyyy' }}
+        </p>
+    </div>
+  </c-modal-body>
+  <c-modal-footer>
+    <button *ngIf="reparacionSeleccionada?.estado === 'Pendiente'" cButton color="success" [cModalToggle]="'modalEditarReparacion'" (click)="guardarEdicion()">Guardar cambios</button>
+    <button cButton color="secondary" [cModalToggle]="'modalEditarReparacion'">Cancelar</button>
+    <button cButton color="secondary" (click)="reparacionSeleccionada && generarRemito(reparacionSeleccionada)">
+        PDF Remito
+        </button>
+  </c-modal-footer>
+</c-modal>
