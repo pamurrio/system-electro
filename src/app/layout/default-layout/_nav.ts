@@ -25,4 +25,9 @@ export const navItems: INavData[] = [
     url: '/reparacion',
     iconComponent: { name: 'cilTv' },
   },
+  {
+    name: $localize`Cierre del dia`,
+    url: '/cierre-del-dia',
+    iconComponent: { name: 'cilTv' },
+  },
 ];

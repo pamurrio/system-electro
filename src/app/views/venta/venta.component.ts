@@ -9,7 +9,8 @@ import { CardComponent,CardBodyComponent, CardHeaderComponent, TableDirective, C
   ModalToggleDirective,
   ModalTitleDirective,
   ButtonDirective,
-  ButtonCloseDirective
+  ButtonCloseDirective,
+  Tabs2Module
 } from '@coreui/angular-pro';  
 
 import jsPDF from 'jspdf';
@@ -22,6 +23,7 @@ declare module 'jspdf' {
 }
 
 import { Producto, ProductoService } from '../../services/producto.service';
+import { Venta, VentaService } from '../../services/venta.service';
 interface ItemCarrito {
   producto: Producto;
   cantidad: number;
@@ -39,7 +41,7 @@ interface ItemCarrito {
   ModalToggleDirective,
   ModalTitleDirective,
   ButtonDirective,
-  ButtonCloseDirective
+  ButtonCloseDirective,Tabs2Module
   ],
   templateUrl: './venta.component.html'
 })
@@ -53,10 +55,21 @@ export class VentaComponent implements OnInit {
   elementosPorPagina: number = 10;
   mostrarResumen: boolean = false;
 
-  constructor(private productoService: ProductoService) {}
+  ventas: Venta[] = [];
+  ventaSeleccionada?: Venta;
+  activeTab: string = 'venta'; // venta | historial
+  tipoPagoSeleccionado: 'efectivo' | 'mercado_pago' | '' = '';
+
+
+  constructor(private productoService: ProductoService, private ventaService: VentaService) {}
 
   ngOnInit(): void {
+   this.cargarVentas();
    this.productos = this.productoService.getProductos();
+  }
+
+  cargarVentas() {
+    this.ventas = this.ventaService.obtenerVentas();
   }
 
   agregarAlCarrito(producto: Producto): void {
@@ -82,10 +95,10 @@ export class VentaComponent implements OnInit {
   }
 
   confirmarVenta(): void {
-  this.mostrarResumen = true;
-}
-
-  finalizarVenta(): void {
+    if(!this.tipoPagoSeleccionado && this.tipoPagoSeleccionado == ''){
+        alert('Se debe seleccionar el tipo de Pago');
+        return;
+    }
     for (const item of this.carrito) {
       const ok = this.productoService.descontarStock(item.producto.id, item.cantidad);
       if (!ok) {
@@ -93,10 +106,26 @@ export class VentaComponent implements OnInit {
         return;
       }
     }
+     this.mostrarResumen = true;
+}
+
+  finalizarVenta(): void {
+    // 3. Registrar la venta en el service (NUEVO)
+    const ventaGuardada = this.ventaService.guardarVenta({
+      productos: this.carrito.map(item => ({
+        producto: item.producto,
+        cantidad: item.cantidad,
+        subtotal: item.cantidad * item.producto.precio
+      })),
+      total: this.total(),
+      tipoPago: this.tipoPagoSeleccionado as 'efectivo' | 'mercado_pago'
+    });
+    this.cargarVentas(); // Refresca el listado
 
     this.generarComprobantePDF();
     this.carrito = [];
     this.mostrarResumen = false;
+    this.tipoPagoSeleccionado = '';
     this.ngOnInit();
   }
 

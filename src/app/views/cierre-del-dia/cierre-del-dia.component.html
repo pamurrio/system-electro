@@ -1,0 +1,201 @@
+<c-col xs="12">
+  <c-card class="mb-4">
+    <c-card-header>
+      <strong>Cierre del dia</strong>
+    </c-card-header>
+    <c-card-body>
+      <button
+        cButton
+        color="success"
+        class="mb-3"
+        (click)="imprimirCierreDia()"
+      >
+        Imprimir
+      </button>
+
+    <div class="row g-3 align-items-end mb-4">
+        <div class="col-12 col-md-4">
+            <label for="tipoPago" class="form-label">Tipo de pago:</label>
+            <select id="tipoPago" class="form-control" [(ngModel)]="tipoPagoFiltro" (change)="onTipoPagoChange(tipoPagoFiltro)">
+            <option value="">Todos</option>
+            <option value="efectivo">Efectivo</option>
+            <option value="mercado_pago">Mercado Pago</option>
+            </select>
+        </div>
+        <div class="col-12 col-md-4">
+            <label for="fecha" class="form-label">Fecha:</label>
+            <c-date-picker
+            [(ngModel)]="fechaFiltro"
+            [closeOnSelect]="true"
+            (ngModelChange)="onFechaChange($event)"
+            
+            id="fecha"
+            />
+        </div>
+    </div>
+
+      <div class="table-responsive d-none d-md-block">
+        <table cTable>
+          <thead>
+            <tr>
+                <th>#</th>
+                <th>Tipo</th>
+                <th>Cliente</th>
+                <th>Fecha</th>
+                <th>Total</th>
+                <th>Tipo de pago</th>
+                <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let item of cierreFiltrado; let i = index">
+            <tr>
+              <td>{{ i+1 }}</td>
+              <td>
+                <span class="badge bg-info" *ngIf="item.tipo === 'venta'">Venta</span>
+                <span class="badge bg-success" *ngIf="item.tipo === 'reparacion'">Reparación</span>
+              </td>
+              <td>
+                {{ item.tipo === 'venta' ? 'Venta directa' : item.detalle.cliente?.nombre }}
+              </td>
+              <td>{{ item.fecha | date:'dd/MM/yyyy' }}</td>
+              <td>${{ item.total }}</td>
+              <td>{{ item.tipoPago === 'efectivo' ? 'Efectivo' : 'Mercado Pago' }}</td>
+              <td>
+                <button 
+                cButton 
+                color="info" 
+                size="sm"
+                (click)="abrirAccordion(i)">
+                {{ accordionIndex === i ? 'Cerrar' : 'Ver detalle' }}
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="accordionIndex === i">
+                <td colspan="7" class="p-0">
+                    <c-accordion>
+                    <c-accordion-item [visible]="true">
+                        <c-accordion-header>
+                        Detalle {{ item.tipo === 'venta' ? 'de venta' : 'de reparación' }}
+                        </c-accordion-header>
+                        <c-accordion-body>
+                        <!-- Detalle de productos si es venta -->
+                        <ng-container *ngIf="item.tipo === 'venta'">
+                            <ul>
+                            <li *ngFor="let prod of item.detalle.productos">
+                                {{ prod.cantidad }} x {{ prod.producto.tipo }} (${{ prod.subtotal }})
+                            </li>
+                            </ul>
+                        </ng-container>
+                        <!-- Detalle de reparación -->
+                        <ng-container *ngIf="item.tipo === 'reparacion'">
+                            <p><strong>Cliente:</strong> {{ item.detalle.cliente.nombre }}</p>
+                            <p><strong>Equipo:</strong> {{ item.detalle.equipo.marca }} {{ item.detalle.equipo.modelo }}</p>
+                            <p><strong>Problema:</strong> {{ item.detalle.equipo.descripcion }}</p>
+                            <p><strong>Presupuesto:</strong> ${{ item.detalle.presupuesto }}</p>
+                            <p><strong>Tipo de pago:</strong> {{ item.detalle.tipoPago === 'efectivo' ? 'Efectivo' : 'Mercado Pago' }}</p>
+                        </ng-container>
+                        </c-accordion-body>
+                    </c-accordion-item>
+                    </c-accordion>
+                </td>
+            </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-md-none">
+        <ng-container *ngFor="let item of cierreFiltrado; let i = index">
+        <c-card class="mb-3">
+          <c-card-body>
+            <div class="d-flex align-items-center mb-2">
+              <div>
+                <div><strong>#:</strong> {{ i+1 }}</div>
+                <div><strong>Tipo:</strong> <span class="badge bg-info" *ngIf="item.tipo === 'venta'">Venta</span>
+                <span class="badge bg-success" *ngIf="item.tipo === 'reparacion'">Reparación</span></div>
+                <div><strong>Cliente:</strong> {{ item.tipo === 'venta' ? 'Venta directa' : item.detalle.cliente?.nombre }}</div>
+                <div><strong>Fecha:</strong> {{ item.fecha | date:'dd/MM/yyyy' }}</div>
+                <div><strong>Total:</strong> ${{ item.total }}</div>
+                <div><strong>Tipo de pago:</strong> {{ item.tipoPago === 'efectivo' ? 'Efectivo' : 'Mercado Pago' }}</div>
+              </div>
+            </div>
+            <button 
+                cButton 
+                color="info" 
+                size="sm"
+                (click)="abrirAccordion(i)">
+                {{ accordionIndex === i ? 'Cerrar' : 'Ver detalle' }}
+                </button>
+          </c-card-body>
+        </c-card>
+        <c-card *ngIf="accordionIndex === i" class="mb-3">
+          <c-card-body>
+            <c-accordion>
+                <c-accordion-item [visible]="true">
+                    <c-accordion-header>
+                    Detalle {{ item.tipo === 'venta' ? 'de venta' : 'de reparación' }}
+                    </c-accordion-header>
+                    <c-accordion-body>
+                    <!-- Detalle de productos si es venta -->
+                    <ng-container *ngIf="item.tipo === 'venta'">
+                        <ul>
+                        <li *ngFor="let prod of item.detalle.productos">
+                            {{ prod.cantidad }} x {{ prod.producto.tipo }} (${{ prod.subtotal }})
+                        </li>
+                        </ul>
+                    </ng-container>
+                    <!-- Detalle de reparación -->
+                    <ng-container *ngIf="item.tipo === 'reparacion'">
+                        <p><strong>Cliente:</strong> {{ item.detalle.cliente.nombre }}</p>
+                        <p><strong>Equipo:</strong> {{ item.detalle.equipo.marca }} {{ item.detalle.equipo.modelo }}</p>
+                        <p><strong>Problema:</strong> {{ item.detalle.equipo.descripcion }}</p>
+                        <p><strong>Presupuesto:</strong> ${{ item.detalle.presupuesto }}</p>
+                        <p><strong>Tipo de pago:</strong> {{ item.detalle.tipoPago === 'efectivo' ? 'Efectivo' : 'Mercado Pago' }}</p>
+                    </ng-container>
+                    </c-accordion-body>
+                </c-accordion-item>
+            </c-accordion>
+          </c-card-body>
+        </c-card>
+        </ng-container>
+      </div>  
+      <nav *ngIf="false" class="mt-3">
+        <ul class="pagination justify-content-center">
+          <li class="page-item" [class.disabled]="paginaActual === 1" *ngIf="paginaActual > 1">
+            <a class="page-link" (click)="cambiarPagina(paginaActual - 1)">Anterior</a>
+          </li>
+
+          <li 
+            class="page-item"
+            *ngFor="let pagina of [].constructor(totalPaginas); let i = index"
+            [class.active]="paginaActual === i + 1">
+            <a class="page-link" (click)="cambiarPagina(i + 1)">{{ i + 1 }}</a>
+          </li>
+
+          <li class="page-item" [class.disabled]="paginaActual === totalPaginas" *ngIf="paginaActual < totalPaginas">
+            <a class="page-link" (click)="cambiarPagina(paginaActual + 1)">Siguiente</a>
+          </li>
+        </ul>
+      </nav>
+    </c-card-body>
+    <c-card-footer class="bg-light text-end border-top mt-2">
+    <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-2">
+        <div class="text-start">
+        <span class="fw-semibold">Fecha seleccionada:</span>
+        <span class="badge bg-primary fs-6">
+            {{ fechaFiltro | date: 'dd/MM/yyyy' }}
+        </span>
+        </div>
+        <div>
+        <span class="fw-semibold me-3">Total efectivo:</span>
+        <span class="text-success fw-bold me-4">${{ totalEfectivo }}</span>
+        <span class="fw-semibold me-3">Total Mercado Pago:</span>
+        <span class="text-info fw-bold me-4">${{ totalMercadoPago }}</span>
+        <span class="fw-bold fs-5 ms-2">Total del día: ${{ totalDia }}</span>
+        </div>
+    </div>
+    </c-card-footer>
+
+  </c-card>
+</c-col>

@@ -1,257 +1,354 @@
-<c-col xs="12">
-  <c-card class="mb-4">
-    <c-card-header>
-      <strong>Venta de productos</strong>
-    </c-card-header>
-    <c-card-body>
+<c-tabs [activeItemKey]="activeTab" [(activeItemKey)]="activeTab">
+  <c-tabs-list variant="tabs">
+    <button cTab itemKey="venta">Venta</button>
+    <button cTab itemKey="historial">Ventas realizadas</button>
+  </c-tabs-list>
+  <c-tabs-content>
+    <!-- TAB DE VENTA (ya existente) -->
+    <c-tab-panel class="p-3" itemKey="venta">
+      <c-col xs="12">
+        <c-card class="mb-4">
+          <c-card-header>
+            <strong>Venta de productos</strong>
+          </c-card-header>
+          <c-card-body>
 
-      <!-- Filtro y selector de paginación -->
-      <div class="mb-3 d-flex align-items-center justify-content-between flex-wrap">
-        <div class="flex-grow-1 me-3">
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Buscar producto..."
-            [(ngModel)]="filtro"
-            (ngModelChange)="onFiltroChange()"
-          />
-        </div>
-        <div class="w-auto">
-          <select class="form-select" [(ngModel)]="elementosPorPagina" (ngModelChange)="onCambiarElementosPorPagina()">
-            <option [ngValue]="5">5</option>
-            <option [ngValue]="10">10</option>
-            <option [ngValue]="20">20</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Tabla de productos -->
-      <div class="table-responsive d-none d-md-block">
-        <table cTable>
-          <thead>
-            <tr>
-              <th>Foto</th>
-              <th>Producto</th>
-              <th>Precio</th>
-              <th>Stock</th>
-              <th>Cantidad</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let p of productosFiltrados()">
-              <td><img [src]="p.foto" width="50" alt="foto" /></td>
-              <td>{{ p.tipo }}</td>
-              <td>$ {{ p.precio }}</td>
-              <td>{{ p.cantidad }}</td>
-              <td>
-                <div class="input-group">
-                    <button 
-                        class="btn btn-outline-secondary" 
-                        type="button"
-                        (click)="decrementarCantidad(p)">
-                        −
-                    </button>
-
-                    <input
-                        type="number"
-                        class="form-control text-center"
-                        min="1"
-                        [max]="p.cantidad"
-                        [(ngModel)]="cantidades[p.id]"
-                        [disabled]="p.cantidad === 0"
-                    />
-
-                    <button 
-                        class="btn btn-outline-secondary" 
-                        type="button"
-                        (click)="incrementarCantidad(p)">
-                        +
-                    </button>
-                </div>
-              </td>
-              <td>
-                <button 
-                  cButton 
-                  color="primary" 
-                  (click)="agregarAlCarrito(p)" 
-                  [disabled]="!puedeVender(p)">
-                  Agregar
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="d-md-none">
-        <c-card *ngFor="let p of productosFiltrados()" class="mb-3">
-            <c-card-body>
-            <div class="d-flex">
-                <img [src]="p.foto" width="80" class="me-3" alt="foto" />
-                <div>
-                <div><strong>Producto:</strong> {{ p.tipo }}</div>
-                <div><strong>Precio:</strong> ${{ p.precio }}</div>
-                <div><strong>Stock:</strong> {{ p.cantidad }}</div>
-                </div>
-            </div>
-
-            <div class="mt-2">
-                <label class="form-label"><strong>Cantidad:</strong></label>
-                <div class="input-group">
-                <button 
-                    class="btn btn-outline-secondary" 
-                    type="button"
-                    (click)="decrementarCantidad(p)">
-                    −
-                </button>
-
+            <!-- Filtro y selector de paginación -->
+            <div class="mb-3 d-flex align-items-center justify-content-between flex-wrap">
+              <div class="flex-grow-1 me-3">
                 <input
-                    type="number"
-                    class="form-control text-center"
-                    min="1"
-                    [max]="p.cantidad"
-                    [(ngModel)]="cantidades[p.id]"
-                    [disabled]="p.cantidad === 0"
+                  type="text"
+                  class="form-control"
+                  placeholder="Buscar producto..."
+                  [(ngModel)]="filtro"
+                  (ngModelChange)="onFiltroChange()"
                 />
-
-                <button 
-                    class="btn btn-outline-secondary" 
-                    type="button"
-                    (click)="incrementarCantidad(p)">
-                    +
-                </button>
-                </div>
-
-                <div class="text-end mt-2">
-                <button 
-                    cButton 
-                    color="primary" 
-                    (click)="agregarAlCarrito(p)" 
-                    [disabled]="!puedeVender(p)">
-                    Agregar
-                </button>
-                </div>
+              </div>
+              <div class="w-auto">
+                <select class="form-select" [(ngModel)]="elementosPorPagina" (ngModelChange)="onCambiarElementosPorPagina()">
+                  <option [ngValue]="5">5</option>
+                  <option [ngValue]="10">10</option>
+                  <option [ngValue]="20">20</option>
+                </select>
+              </div>
             </div>
-            </c-card-body>
-        </c-card>
-       </div>
 
-      <!-- Carrito -->
-      <div class="d-none d-md-block" *ngIf="!mostrarResumen && carrito.length > 0">
-        <h5>Carrito de venta</h5>
-        <table cTable>
-            <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Cantidad</th>
-                <th>Precio Unitario</th>
-                <th>Subtotal</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr *ngFor="let item of carrito">
-                <td>{{ item.producto.tipo }}</td>
-                <td>{{ item.cantidad }}</td>
-                <td>$ {{ item.producto.precio }}</td>
-                <td>$ {{ item.cantidad * item.producto.precio }}</td>
-                <td>
-                <button cButton color="danger" (click)="quitarDelCarrito(item.producto.id)">Eliminar</button>
-                </td>
-            </tr>
-            </tbody>
-            <tfoot>
-            <tr>
-                <td colspan="3" class="text-end"><strong>Total:</strong></td>
-                <td colspan="2">$ {{ total() }}</td>
-            </tr>
-            </tfoot>
-        </table>
+            <!-- Tabla de productos -->
+            <div class="table-responsive d-none d-md-block">
+              <table cTable>
+                <thead>
+                  <tr>
+                    <th>Foto</th>
+                    <th>Producto</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                    <th>Cantidad</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let p of productosFiltrados()">
+                    <td><img [src]="p.foto" width="50" alt="foto" /></td>
+                    <td>{{ p.tipo }}</td>
+                    <td>$ {{ p.precio }}</td>
+                    <td>{{ p.cantidad }}</td>
+                    <td>
+                      <div class="input-group">
+                          <button 
+                              class="btn btn-outline-secondary" 
+                              type="button"
+                              (click)="decrementarCantidad(p)">
+                              −
+                          </button>
 
-        <div class="text-end mt-3">
-            <button cButton color="success" (click)="confirmarVenta()" [disabled]="carrito.length === 0">
-            Confirmar venta
-            </button>
-        </div>
-      </div>
+                          <input
+                              type="number"
+                              class="form-control text-center"
+                              min="1"
+                              [max]="p.cantidad"
+                              [(ngModel)]="cantidades[p.id]"
+                              [disabled]="p.cantidad === 0"
+                          />
 
-      <div class="d-md-none" *ngIf="!mostrarResumen && carrito.length > 0">
-        <h5>Carrito</h5>
-        <c-card *ngFor="let item of carrito" class="mb-3">
-            <c-card-body>
-            <div><strong>Producto:</strong> {{ item.producto.tipo }}</div>
-            <div><strong>Cantidad:</strong> {{ item.cantidad }}</div>
-            <div><strong>Precio unitario:</strong> ${{ item.producto.precio }}</div>
-            <div><strong>Subtotal:</strong> ${{ item.cantidad * item.producto.precio }}</div>
-            <div class="text-end mt-2">
-                <button cButton color="danger" (click)="quitarDelCarrito(item.producto.id)">Eliminar</button>
+                          <button 
+                              class="btn btn-outline-secondary" 
+                              type="button"
+                              (click)="incrementarCantidad(p)">
+                              +
+                          </button>
+                      </div>
+                    </td>
+                    <td>
+                      <button 
+                        cButton 
+                        color="primary" 
+                        (click)="agregarAlCarrito(p)" 
+                        [disabled]="!puedeVender(p)">
+                        Agregar
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-            </c-card-body>
+
+            <div class="d-md-none">
+              <c-card *ngFor="let p of productosFiltrados()" class="mb-3">
+                  <c-card-body>
+                  <div class="d-flex">
+                      <img [src]="p.foto" width="80" class="me-3" alt="foto" />
+                      <div>
+                      <div><strong>Producto:</strong> {{ p.tipo }}</div>
+                      <div><strong>Precio:</strong> ${{ p.precio }}</div>
+                      <div><strong>Stock:</strong> {{ p.cantidad }}</div>
+                      </div>
+                  </div>
+
+                  <div class="mt-2">
+                      <label class="form-label"><strong>Cantidad:</strong></label>
+                      <div class="input-group">
+                      <button 
+                          class="btn btn-outline-secondary" 
+                          type="button"
+                          (click)="decrementarCantidad(p)">
+                          −
+                      </button>
+
+                      <input
+                          type="number"
+                          class="form-control text-center"
+                          min="1"
+                          [max]="p.cantidad"
+                          [(ngModel)]="cantidades[p.id]"
+                          [disabled]="p.cantidad === 0"
+                      />
+
+                      <button 
+                          class="btn btn-outline-secondary" 
+                          type="button"
+                          (click)="incrementarCantidad(p)">
+                          +
+                      </button>
+                      </div>
+
+                      <div class="text-end mt-2">
+                      <button 
+                          cButton 
+                          color="primary" 
+                          (click)="agregarAlCarrito(p)" 
+                          [disabled]="!puedeVender(p)">
+                          Agregar
+                      </button>
+                      </div>
+                  </div>
+                  </c-card-body>
+              </c-card>
+            </div>
+
+            <!-- Carrito -->
+            <div class="d-none d-md-block" *ngIf="!mostrarResumen && carrito.length > 0">
+              <h5>Carrito de venta</h5>
+              <table cTable>
+                  <thead>
+                  <tr>
+                      <th>Producto</th>
+                      <th>Cantidad</th>
+                      <th>Precio Unitario</th>
+                      <th>Subtotal</th>
+                      <th></th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr *ngFor="let item of carrito">
+                      <td>{{ item.producto.tipo }}</td>
+                      <td>{{ item.cantidad }}</td>
+                      <td>$ {{ item.producto.precio }}</td>
+                      <td>$ {{ item.cantidad * item.producto.precio }}</td>
+                      <td>
+                      <button cButton color="danger" (click)="quitarDelCarrito(item.producto.id)">Eliminar</button>
+                      </td>
+                  </tr>
+                  </tbody>
+                  <tfoot>
+                  <tr>
+                      <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                      <td colspan="2">$ {{ total() }}</td>
+                  </tr>
+                  </tfoot>
+              </table>
+
+              <div>
+                <label for="tipoPago">Tipo de pago:</label>
+                <select id="tipoPago" class="form-select" [(ngModel)]="tipoPagoSeleccionado">
+                  <option value="" disabled selected>Seleccione el tipo de pago</option>
+                  <option value="efectivo">Efectivo</option>
+                  <option value="mercado_pago">Mercado Pago</option>
+                </select>
+              </div>
+
+              <div class="text-end mt-3">
+                  <button cButton color="success" (click)="confirmarVenta()" [disabled]="carrito.length === 0">
+                  Confirmar venta
+                  </button>
+              </div>
+            </div>
+
+            <div class="d-md-none" *ngIf="!mostrarResumen && carrito.length > 0">
+              <h5>Carrito</h5>
+              <c-card *ngFor="let item of carrito" class="mb-3">
+                  <c-card-body>
+                  <div><strong>Producto:</strong> {{ item.producto.tipo }}</div>
+                  <div><strong>Cantidad:</strong> {{ item.cantidad }}</div>
+                  <div><strong>Precio unitario:</strong> ${{ item.producto.precio }}</div>
+                  <div><strong>Subtotal:</strong> ${{ item.cantidad * item.producto.precio }}</div>
+                  <div class="text-end mt-2">
+                      <button cButton color="danger" (click)="quitarDelCarrito(item.producto.id)">Eliminar</button>
+                  </div>
+                  </c-card-body>
+              </c-card>
+
+              <div>
+                <label for="tipoPago">Tipo de pago:</label>
+                <select id="tipoPago" class="form-select" [(ngModel)]="tipoPagoSeleccionado">
+                  <option value="" disabled selected>Seleccione el tipo de pago</option>
+                  <option value="efectivo">Efectivo</option>
+                  <option value="mercado_pago">Mercado Pago</option>
+                </select>
+              </div>
+
+              <div class="text-end mb-2">
+                  <strong>Total: ${{ total() }}</strong>
+              </div>
+
+              <div class="text-end">
+                  <button cButton color="success" (click)="confirmarVenta()" [disabled]="carrito.length === 0">
+                  Confirmar venta
+                  </button>
+              </div>
+            </div>
+
+            <div *ngIf="mostrarResumen" class="mt-4">
+              <div class="d-none d-md-block">
+                  <h5>Resumen de venta</h5>
+                  <table cTable>
+                  <thead>
+                      <tr>
+                      <th>Producto</th>
+                      <th>Cantidad</th>
+                      <th>Precio</th>
+                      <th>Subtotal</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      <tr *ngFor="let item of carrito">
+                      <td>{{ item.producto.tipo }}</td>
+                      <td>{{ item.cantidad }}</td>
+                      <td>$ {{ item.producto.precio }}</td>
+                      <td>$ {{ item.cantidad * item.producto.precio }}</td>
+                      </tr>
+                  </tbody>
+                  <tfoot>
+                      <tr>
+                      <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                      <td>$ {{ total() }}</td>
+                      </tr>
+                  </tfoot>
+                  </table>
+              </div>
+
+              <div class="d-md-none">
+                  <h5>Resumen de venta</h5>
+                  <c-card *ngFor="let item of carrito" class="mb-3">
+                  <c-card-body>
+                      <div><strong>Producto:</strong> {{ item.producto.tipo }}</div>
+                      <div><strong>Cantidad:</strong> {{ item.cantidad }}</div>
+                      <div><strong>Precio:</strong> ${{ item.producto.precio }}</div>
+                      <div><strong>Subtotal:</strong> ${{ item.cantidad * item.producto.precio }}</div>
+                  </c-card-body>
+                  </c-card>
+                  <div class="text-end"><strong>Total: ${{ total() }}</strong></div>
+              </div>
+            <div class="text-end mt-3">
+                  <button cButton color="success" (click)="finalizarVenta()">
+                  Generar PDF y finalizar venta
+                  </button>
+                  <button cButton color="secondary" class="ms-2" (click)="mostrarResumen = false">
+                  Volver
+                  </button>
+              </div>
+            </div>
+
+          </c-card-body>
         </c-card>
+      </c-col>
+    </c-tab-panel>
 
-        <div class="text-end mb-2">
-            <strong>Total: ${{ total() }}</strong>
-        </div>
-
-        <div class="text-end">
-            <button cButton color="success" (click)="confirmarVenta()" [disabled]="carrito.length === 0">
-            Confirmar venta
-            </button>
-        </div>
-      </div>
-
-      <div *ngIf="mostrarResumen" class="mt-4">
-        <div class="d-none d-md-block">
-            <h5>Resumen de venta</h5>
+    <!-- TAB DE HISTORIAL DE VENTAS -->
+    <c-tab-panel class="p-3" itemKey="historial">
+      <c-card class="mb-4">
+        <c-card-header><strong>Ventas realizadas</strong></c-card-header>
+        <c-card-body>
+          <div *ngIf="ventas.length === 0" class="text-muted">No hay ventas registradas.</div>
+          <div class="table-responsive" *ngIf="ventas.length > 0">
             <table cTable>
-            <thead>
+              <thead>
                 <tr>
-                <th>Producto</th>
-                <th>Cantidad</th>
-                <th>Precio</th>
-                <th>Subtotal</th>
+                  <th>#</th>
+                  <th>Fecha</th>
+                  <th>Total</th>
+                  <th>Tipo de pago</th>
+                  <th>Acciones</th>
                 </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let item of carrito">
-                <td>{{ item.producto.tipo }}</td>
-                <td>{{ item.cantidad }}</td>
-                <td>$ {{ item.producto.precio }}</td>
-                <td>$ {{ item.cantidad * item.producto.precio }}</td>
+              </thead>
+              <tbody>
+                <tr *ngFor="let v of ventas">
+                  <td>{{ v.id }}</td>
+                  <td>{{ v.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+                  <td>$ {{ v.total }}</td>
+                  <td>{{ v.tipoPago === 'efectivo' ? 'Efectivo' : 'Mercado Pago' }}</td>
+                  <td>
+                    <button cButton size="sm" color="info" [cModalToggle]="'modalDetalleVenta'" (click)="abrirDetalleVenta(v)">Ver detalle</button>
+                  </td>
                 </tr>
-            </tbody>
-            <tfoot>
-                <tr>
-                <td colspan="3" class="text-end"><strong>Total:</strong></td>
-                <td>$ {{ total() }}</td>
-                </tr>
-            </tfoot>
+              </tbody>
             </table>
-        </div>
+          </div>
+        </c-card-body>
+      </c-card>
+    </c-tab-panel>
+  </c-tabs-content>
+</c-tabs>
 
-        <div class="d-md-none">
-            <h5>Resumen de venta</h5>
-            <c-card *ngFor="let item of carrito" class="mb-3">
-            <c-card-body>
-                <div><strong>Producto:</strong> {{ item.producto.tipo }}</div>
-                <div><strong>Cantidad:</strong> {{ item.cantidad }}</div>
-                <div><strong>Precio:</strong> ${{ item.producto.precio }}</div>
-                <div><strong>Subtotal:</strong> ${{ item.cantidad * item.producto.precio }}</div>
-            </c-card-body>
-            </c-card>
-            <div class="text-end"><strong>Total: ${{ total() }}</strong></div>
-        </div>
-       <div class="text-end mt-3">
-            <button cButton color="success" (click)="finalizarVenta()">
-            Generar PDF y finalizar venta
-            </button>
-            <button cButton color="secondary" class="ms-2" (click)="mostrarResumen = false">
-            Volver
-            </button>
-        </div>
-      </div>
 
-    </c-card-body>
-  </c-card>
-</c-col>
+<c-modal [id]="'modalDetalleVenta'" alignment="center" size="lg">
+  <c-modal-header>
+    <h5>Detalle de venta</h5>
+  </c-modal-header>
+  <c-modal-body *ngIf="ventaSeleccionada">
+    <p><strong>ID:</strong> {{ ventaSeleccionada.id }}</p>
+    <p><strong>Fecha:</strong> {{ ventaSeleccionada.fecha | date:'dd/MM/yyyy HH:mm' }}</p>
+    <p><strong>Tipo de pago:</strong> {{ ventaSeleccionada.tipoPago === 'efectivo' ? 'Efectivo' : 'Mercado Pago' }}</p>
+    <p><strong>Total:</strong> ${{ ventaSeleccionada.total }}</p>
+    <h6 class="mt-3">Productos vendidos:</h6>
+    <table cTable>
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Cantidad</th>
+          <th>Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of ventaSeleccionada.productos">
+          <td>{{ item.producto.tipo }}</td>
+          <td>{{ item.cantidad }}</td>
+          <td>$ {{ item.subtotal }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="secondary" [cModalToggle]="'modalDetalleVenta'">Cerrar</button>
+  </c-modal-footer>
+</c-modal>
+

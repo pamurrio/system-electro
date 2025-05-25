@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Cliente, ClienteService } from '../../services/cliente.service';
 import { ReparacionService, Reparacion } from '../../services/reparacion.service'
@@ -11,7 +11,7 @@ import { CardComponent,CardBodyComponent, CardHeaderComponent, TableDirective, C
   ModalToggleDirective,
   ModalTitleDirective,
   ButtonDirective,
-  ButtonCloseDirective
+  ButtonCloseDirective, Tabs2Module 
 } from '@coreui/angular-pro';
 import { NgForOf, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -34,10 +34,11 @@ declare module 'jspdf' {
       ModalHeaderComponent,
       ModalBodyComponent,
       ModalFooterComponent,ModalToggleDirective,
-      ModalTitleDirective, NgIf, ButtonDirective, ButtonCloseDirective, FormsModule, CommonModule ],
+      ModalTitleDirective, NgIf, ButtonDirective, ButtonCloseDirective, FormsModule, CommonModule,
+    Tabs2Module ],
 })
 export class ReperacionComponent {
-
+  activeTab: string = 'alta';
   dniBusqueda: string = '';
   clienteSeleccionado: Cliente | null = null;
   clienteNoEncontrado: boolean = false;
@@ -63,6 +64,9 @@ export class ReperacionComponent {
   reparacionSeleccionada: Reparacion | null = null;
   nuevoEstado: Reparacion['estado'] = 'Pendiente';
   nuevaObservacion: string = '';
+  tipoPagoSeleccionado: 'efectivo' | 'mercado_pago' | '' = '';
+
+  @ViewChild('modalEditarReparacion') modalEditarReparacion!: ModalComponent;
 
   constructor(private clienteService: ClienteService, private reparacionService: ReparacionService) {
     this.reparaciones = this.reparacionService.getReparaciones();
@@ -114,6 +118,7 @@ guardarReparacion(): void {
     this.garantiaDias = 0;
     this.dniBusqueda = '';
     this.fechaEstimadaEntrega = new Date(); // reset también este campo
+    this.activeTab = 'listado';
   }
 
   getReparacionesPorEstado(estado: string): Reparacion[] {
@@ -135,11 +140,22 @@ guardarReparacion(): void {
   seleccionarReparacion(r: Reparacion): void {
     this.reparacionSeleccionada = { ...r };
     this.nuevoEstado = r.estado;
+    this.tipoPagoSeleccionado = r.tipoPago as 'efectivo' | 'mercado_pago' ;
     this.nuevaObservacion = '';
   }
 
   guardarEdicion(): void {
     if (!this.reparacionSeleccionada) return;
+
+    if (this.nuevoEstado === 'Entregado') {
+      if (!this.tipoPagoSeleccionado) {
+        alert('Se solicita seleccionar el tipo de pago');
+        return;
+      }
+      this.reparacionSeleccionada.tipoPago = this.tipoPagoSeleccionado as 'efectivo' | 'mercado_pago';
+    } else {
+      delete this.reparacionSeleccionada.tipoPago; // Eliminalo si cambia a otro estado
+    }
 
     // Buscar y actualizar reparación en el arreglo
     const index = this.reparaciones.findIndex(r => r.id === this.reparacionSeleccionada!.id);
@@ -159,10 +175,18 @@ guardarReparacion(): void {
       }
     }
 
+    this.modalEditarReparacion.visible=false;
+
     // Cerrar modal y reset
     this.reparacionSeleccionada = null;
     this.nuevoEstado = 'Pendiente';
     this.nuevaObservacion = '';
+  }
+
+  onEstadoChange() {
+    if (this.nuevoEstado !== 'Entregado') {
+      this.tipoPagoSeleccionado = '';
+    }
   }
 
   generarRemito(r: Reparacion): void {
@@ -212,5 +236,8 @@ guardarReparacion(): void {
 
   }
 
+  handleChange($event: string | number | undefined) {
+    console.log('handleChange', $event);
+  }
 
 }

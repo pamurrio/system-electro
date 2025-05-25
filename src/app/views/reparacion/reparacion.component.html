@@ -1,3 +1,11 @@
+<c-tabs [activeItemKey]="'profile'" [(activeItemKey)]="activeTab" (activeItemKeyChange)="handleChange($event)">
+  <c-tabs-list variant="tabs">
+    <button cTab itemKey="listado">Reparaciones</button>
+    <button cTab itemKey="alta">Alta Reparacion</button>
+  </c-tabs-list>
+  <c-tabs-content>
+    <c-tab-panel class="p-3" itemKey="alta">
+
 <c-card class="mb-4">
   <c-card-header><strong>Datos del Cliente</strong></c-card-header>
   <c-card-body>
@@ -31,40 +39,6 @@
 
   </c-card-body>
 </c-card>
-
-<c-modal [id]="'modalNuevoCliente'" alignment="center">
-  <c-modal-header>
-    <h5>Nuevo Cliente</h5>
-  </c-modal-header>
-  <c-modal-body>
-    <form #formCliente="ngForm">
-      <div class="mb-3">
-        <label>DNI</label>
-        <input type="text" class="form-control" [(ngModel)]="nuevoCliente.dni" name="dni" />
-      </div>
-      <div class="mb-3">
-        <label>Nombre</label>
-        <input type="text" class="form-control" [(ngModel)]="nuevoCliente.nombre" name="nombre" />
-      </div>
-      <div class="mb-3">
-        <label>Email</label>
-        <input type="email" class="form-control" [(ngModel)]="nuevoCliente.email" name="email" />
-      </div>
-      <div class="mb-3">
-        <label>Teléfono</label>
-        <input type="text" class="form-control" [(ngModel)]="nuevoCliente.telefono" name="telefono" />
-      </div>
-      <div class="mb-3">
-        <label>Dirección</label>
-        <input type="text" class="form-control" [(ngModel)]="nuevoCliente.direccion" name="direccion" />
-      </div>
-    </form>
-  </c-modal-body>
-  <c-modal-footer>
-    <button cButton color="success" [cModalToggle]="'modalNuevoCliente'" (click)="guardarNuevoCliente()">Guardar</button>
-    <button cButton color="secondary" [cModalToggle]="'modalNuevoCliente'">Cancelar</button>
-  </c-modal-footer>
-</c-modal>
 
 <c-card class="mb-4">
   <c-card-header><strong>Datos del equipo</strong></c-card-header>
@@ -139,17 +113,16 @@
         </c-card-body>
       </c-card>
     </div>
-
+    <div class="text-end mb-4">
+    <button cButton color="primary" (click)="guardarReparacion()">
+        Guardar reparación
+    </button>
+    </div>
   </c-card-body>
 </c-card>
+</c-tab-panel>
 
-<div class="text-end mb-4">
-  <button cButton color="primary" (click)="guardarReparacion()">
-    Guardar reparación
-  </button>
-</div>
-
-
+<c-tab-panel class="p-3" itemKey="listado">
 <c-card class="mb-4">
   <c-card-header><strong>Reparaciones por estado</strong></c-card-header>
   <c-card-body>
@@ -242,8 +215,11 @@
 
   </c-card-body>
 </c-card>
+</c-tab-panel>
+  </c-tabs-content>
+</c-tabs>
 
-<c-modal [id]="'modalEditarReparacion'" alignment="center" size="lg">
+<c-modal #modalEditarReparacion  [id]="'modalEditarReparacion'" alignment="center" size="lg">
   <c-modal-header>
     <h5>Editar reparación</h5>
   </c-modal-header>
@@ -262,11 +238,22 @@
 
     <div class="mb-3">
       <label>Estado</label>
-      <select class="form-control" [(ngModel)]="nuevoEstado"
+      <select class="form-control" [(ngModel)]="nuevoEstado" (ngModelChange)="onEstadoChange()"
       [disabled]="reparacionSeleccionada.estado !== 'Pendiente'">
         <option value="Pendiente">Pendiente</option>
         <option value="Entregado">Entregado</option>
         <option value="NJR">NJR</option>
+      </select>
+    </div>
+
+    <div class="mb-3" *ngIf="nuevoEstado === 'Entregado'">
+      <label for="tipoPagoReparacion">Tipo de pago:</label>
+      <select id="tipoPagoReparacion" class="form-control"
+        [(ngModel)]="tipoPagoSeleccionado"
+        required [disabled]="reparacionSeleccionada.estado !== 'Pendiente'">
+        <option value="" disabled>Seleccione el tipo de pago</option>
+        <option value="efectivo">Efectivo</option>
+        <option value="mercado_pago">Mercado Pago</option>
       </select>
     </div>
 
@@ -294,10 +281,44 @@
     </div>
   </c-modal-body>
   <c-modal-footer>
-    <button *ngIf="reparacionSeleccionada?.estado === 'Pendiente'" cButton color="success" [cModalToggle]="'modalEditarReparacion'" (click)="guardarEdicion()">Guardar cambios</button>
+    <button *ngIf="reparacionSeleccionada?.estado === 'Pendiente'" cButton color="success" (click)="guardarEdicion()">Guardar cambios</button>
     <button cButton color="secondary" [cModalToggle]="'modalEditarReparacion'">Cancelar</button>
     <button cButton color="secondary" (click)="reparacionSeleccionada && generarRemito(reparacionSeleccionada)">
         PDF Remito
         </button>
+  </c-modal-footer>
+</c-modal>
+
+<c-modal [id]="'modalNuevoCliente'" alignment="center">
+  <c-modal-header>
+    <h5>Nuevo Cliente</h5>
+  </c-modal-header>
+  <c-modal-body>
+    <form #formCliente="ngForm">
+      <div class="mb-3">
+        <label>DNI</label>
+        <input type="text" class="form-control" [(ngModel)]="nuevoCliente.dni" name="dni" />
+      </div>
+      <div class="mb-3">
+        <label>Nombre</label>
+        <input type="text" class="form-control" [(ngModel)]="nuevoCliente.nombre" name="nombre" />
+      </div>
+      <div class="mb-3">
+        <label>Email</label>
+        <input type="email" class="form-control" [(ngModel)]="nuevoCliente.email" name="email" />
+      </div>
+      <div class="mb-3">
+        <label>Teléfono</label>
+        <input type="text" class="form-control" [(ngModel)]="nuevoCliente.telefono" name="telefono" />
+      </div>
+      <div class="mb-3">
+        <label>Dirección</label>
+        <input type="text" class="form-control" [(ngModel)]="nuevoCliente.direccion" name="direccion" />
+      </div>
+    </form>
+  </c-modal-body>
+  <c-modal-footer>
+    <button cButton color="success" [cModalToggle]="'modalNuevoCliente'" (click)="guardarNuevoCliente()">Guardar</button>
+    <button cButton color="secondary" [cModalToggle]="'modalNuevoCliente'">Cancelar</button>
   </c-modal-footer>
 </c-modal>

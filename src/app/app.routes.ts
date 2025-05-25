@@ -38,6 +38,11 @@ export const routes: Routes = [
         path: 'venta',
         loadChildren: () =>
           import('./views/venta/routes').then((m) => m.routes)
+      },
+      {
+        path: 'cierre-del-dia',
+        loadChildren: () =>
+          import('./views/cierre-del-dia/routes').then((m) => m.routes)
       }
     ]
   },
